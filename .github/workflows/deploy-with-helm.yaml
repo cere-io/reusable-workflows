@@ -1,0 +1,69 @@
+name: Release service with helm.
+
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        required: true
+        description: Platform to execute on
+        type: string
+
+      repository:
+        required: true
+        type: string
+
+      helm-repo-path:
+        required: true
+        type: string
+      helm-release:
+        required: true
+        type: string
+
+      namespace:
+        required: true
+        type: string
+
+      tag:
+        required: true
+        type: string
+      environment:
+        required: true
+        type: string
+
+    secrets:
+      TRIGGER_GITHUB_TOKEN:
+        required: true
+      HELM_VERSION:
+        required: true
+      KUBECTL_VERSION:
+        required: true
+
+jobs:
+  deploy:
+    name: Upgrade service with helm.
+    runs-on: ${{ fromJSON(inputs.runs-on) }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: ${{ inputs.repository }}
+          token: ${{ secrets.TRIGGER_GITHUB_TOKEN }}
+      - uses: azure/setup-helm@v1
+        with:
+          version: ${{ secrets.HELM_VERSION }}
+      - uses: azure/setup-kubectl@v1
+        with:
+          version: ${{ secrets.KUBECTL_VERSION }}
+      - name: Deploy
+        env:
+          HELM_RELEASE: ${{ inputs.helm-release }}
+          HELM_REPO_PATH: ${{ inputs.helm-repo-path }}
+          NAMESPACE: ${{ inputs.namespace }}
+          ENVIRONMENT: ${{ inputs.environment }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          helm upgrade --install ${HELM_RELEASE} ${HELM_REPO_PATH} \
+            -f ${HELM_REPO_PATH}/envs/${ENVIRONMENT}.yaml \
+            --set image.tag=${TAG} \
+            --debug --atomic --cleanup-on-fail \
+            --timeout 5m \
+            -n ${NAMESPACE}

@@ -1,0 +1,101 @@
+name: Build Docker image and push.
+
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        required: true
+        description: Platform to execute on
+        type: string
+      build_container:
+        required: true
+        description: Base image to build
+        type: string
+      deploy_container:
+        required: true
+        description: Base image to deploy
+        type: string
+      install_packages_command:
+        required: true
+        description: Command to install packages
+        type: string
+      build_command:
+        required: true
+        description: Build command
+        type: string
+      path_to_static_files_to_upload:
+        required: true
+        description: Path to files to upload
+        type: string
+    secrets:
+      NETWORK_AWS_ACCESS_KEY_ID:
+        required: true
+      NETWORK_AWS_SECRET_ACCESS_KEY:
+        required: true
+      AWS_REGION:
+        required: true
+      S3_BUCKET_NAME:
+        required: true
+      CF_DISTRIBUTION_ID:
+        required: true
+
+jobs:
+  build-static-files:
+    name: Build static files
+    runs-on: ${{ fromJSON(inputs.runs-on) }}
+    container:
+      image: ${{ inputs.build_container }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install system packages
+        run: |
+          apt update
+          apt install -y python3 libpq-dev make build-essential
+      - name: Restore cache
+        uses: actions/cache@v2
+        with:
+          path: 'node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('yarn.lock') }}
+      - name: Install packages
+        run: ${{ inputs.install_packages_command }}
+      - name: Build
+        env:
+          CI: false
+        run: ${{ inputs.build_command }}
+      - name: Prepare artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: build
+          path: ${{ inputs.path_to_static_files_to_upload }}
+
+  deploy-static-files:
+    name: Deploy static files
+    needs: build-static-files
+    runs-on: ${{ fromJSON(inputs.runs-on) }}
+    container:
+      image: ${{ inputs.deploy_container }}
+    steps:
+      - name: Restore build
+        uses: actions/download-artifact@v2
+        with:
+          name: build
+          path: build
+      - name: Install aws-cli
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          apt update
+          apt install -y awscli
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.NETWORK_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.NETWORK_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name: Deploy
+        env:
+          S3_BUCKET: ${{ secrets.S3_BUCKET_NAME }}
+          CF_DISTRIBUTION_ID: ${{ secrets.CF_DISTRIBUTION_ID }}
+        run: |
+          aws s3 sync --metadata-directive="REPLACE" build/ s3://${S3_BUCKET}
+          aws cloudfront create-invalidation --distribution-id ${CF_DISTRIBUTION_ID} --paths "/*"
