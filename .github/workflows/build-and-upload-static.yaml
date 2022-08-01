@@ -38,6 +38,8 @@ on:
         required: true
       CF_DISTRIBUTION_ID:
         required: true
+      NPM_TOKEN:
+        required: false
 
 jobs:
   build-static-files:
@@ -58,9 +60,12 @@ jobs:
           key: ${{ runner.os }}-modules-${{ hashFiles('yarn.lock') }}
       - name: Install packages
         run: ${{ inputs.install_packages_command }}
+        env:
+          NPM_TOKEN: ${{secrets.NPM_TOKEN}}
       - name: Build
         env:
           CI: false
+          NPM_TOKEN: ${{secrets.NPM_TOKEN}}
         run: ${{ inputs.build_command }}
       - name: Prepare artifacts
         uses: actions/upload-artifact@v2
