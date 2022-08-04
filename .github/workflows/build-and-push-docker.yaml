@@ -19,6 +19,10 @@ on:
       image:
         required: false
         type: string
+      file:
+        required: false
+        type: string
+        default: ./Dockerfile
 
       environment:
         required: true
@@ -38,6 +42,8 @@ on:
         required: true
       AWS_REGION:
         required: true
+      NPM_TOKEN:
+        required: false
 
     outputs:
       version:
@@ -86,9 +92,12 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: ./
-          file: ./Dockerfile
+          file: ${{ inputs.file }}
           push: true
           no-cache: true
+          build-args: |
+            NPM_TOKEN=${{ secrets.NPM_TOKEN }}
+            ENV_FILE_NAME=${{ inputs.environment }}
           tags: |
             ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ steps.version.outputs.version }}
             ${{ inputs.org }}/${{ inputs.image }}:${{ steps.version.outputs.version }}
@@ -102,8 +111,11 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: ./
-          file: ./Dockerfile
+          file: ${{ inputs.file }}
           push: true
           no-cache: true
+          build-args: |
+            NPM_TOKEN=${{ secrets.NPM_TOKEN }}
+            ENV_FILE_NAME=${{ inputs.environment }}
           tags: |
             ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ steps.version.outputs.version }}

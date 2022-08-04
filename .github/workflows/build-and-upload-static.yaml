@@ -27,6 +27,12 @@ on:
         required: true
         description: Path to files to upload
         type: string
+      build_static_files:
+        required: false
+        default: true
+        description: Build static files?
+        type: boolean
+
     secrets:
       NETWORK_AWS_ACCESS_KEY_ID:
         required: true
@@ -38,11 +44,10 @@ on:
         required: true
       CF_DISTRIBUTION_ID:
         required: true
-      NPM_TOKEN:
-        required: false
 
 jobs:
   build-static-files:
+    if: ${{ inputs.build_static_files }}
     name: Build static files
     runs-on: ${{ fromJSON(inputs.runs-on) }}
     container:
@@ -52,7 +57,7 @@ jobs:
       - name: Install system packages
         run: |
           apt update
-          apt install -y python3 libpq-dev make build-essential
+          apt install -y python3 libpq-dev make build-essential git
       - name: Restore cache
         uses: actions/cache@v2
         with:
@@ -60,12 +65,9 @@ jobs:
           key: ${{ runner.os }}-modules-${{ hashFiles('yarn.lock') }}
       - name: Install packages
         run: ${{ inputs.install_packages_command }}
-        env:
-          NPM_TOKEN: ${{secrets.NPM_TOKEN}}
       - name: Build
         env:
           CI: false
-          NPM_TOKEN: ${{secrets.NPM_TOKEN}}
         run: ${{ inputs.build_command }}
       - name: Prepare artifacts
         uses: actions/upload-artifact@v2
@@ -76,14 +78,21 @@ jobs:
   deploy-static-files:
     name: Deploy static files
     needs: build-static-files
+    if: always() && (needs.build-static-files.result == 'success' || needs.build-static-files.result == 'skipped')
     runs-on: ${{ fromJSON(inputs.runs-on) }}
     container:
       image: ${{ inputs.deploy_container }}
     steps:
       - name: Restore build
+        if: ${{ inputs.build_static_files }}
         uses: actions/download-artifact@v2
         with:
           name: build
+          path: build
+      - name: Checkout repository
+        if: ${{ !inputs.build_static_files }}
+        uses: actions/checkout@v3
+        with:
           path: build
       - name: Install aws-cli
         env:
@@ -102,5 +111,5 @@ jobs:
           S3_BUCKET: ${{ secrets.S3_BUCKET_NAME }}
           CF_DISTRIBUTION_ID: ${{ secrets.CF_DISTRIBUTION_ID }}
         run: |
-          aws s3 sync --metadata-directive="REPLACE" build/ s3://${S3_BUCKET}
+          aws s3 sync --metadata-directive="REPLACE" --exclude ".*" build/ s3://${S3_BUCKET}
           aws cloudfront create-invalidation --distribution-id ${CF_DISTRIBUTION_ID} --paths "/*"
