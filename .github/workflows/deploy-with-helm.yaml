@@ -62,6 +62,7 @@ jobs:
           helm upgrade --install ${HELM_RELEASE} ${HELM_REPO_PATH} \
             -f ${HELM_REPO_PATH}/envs/${ENVIRONMENT}.yaml \
             --set image.tag=${TAG} \
+            --set global.image.tag=${TAG} \
             --debug --atomic --cleanup-on-fail \
             --timeout 5m \
             -n ${NAMESPACE}
