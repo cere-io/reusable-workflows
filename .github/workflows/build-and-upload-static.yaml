@@ -32,6 +32,22 @@ on:
         default: true
         description: Build static files?
         type: boolean
+      client_path:
+        required: false
+        default: "."
+        type: string
+
+      inject_ssm_secrets:
+        required: false
+        default: false
+        description: Inject ssm secrets?
+        type: boolean
+      ssm_environment:
+        required: false
+        type: string
+      stacking_lp:
+        required: false
+        type: string
 
     secrets:
       NETWORK_AWS_ACCESS_KEY_ID:
@@ -61,11 +77,85 @@ jobs:
       - name: Restore cache
         uses: actions/cache@v2
         with:
-          path: 'node_modules'
-          key: ${{ runner.os }}-modules-${{ hashFiles('yarn.lock') }}
+          path: '${{ inputs.client_path }}/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('${{ inputs.client_path }}/yarn.lock') }}
       - name: Install packages
+        working-directory: ${{ inputs.client_path }}
         run: ${{ inputs.install_packages_command }}
+
+      - name: Configure AWS Credentials
+        if: ${{ inputs.inject_ssm_secrets }}
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.NETWORK_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.NETWORK_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Inject REACT_APP_CHAIN_ID
+        if: ${{ inputs.inject_ssm_secrets }}
+        uses: marvinpinto/action-inject-ssm-secrets@latest
+        with:
+          ssm_parameter: "/${{ inputs.ssm_environment }}-cere-staking-${{ inputs.stacking_lp  }}-REACT_APP_CHAIN_ID"
+          env_variable_name: "REACT_APP_CHAIN_ID"
+
+      - name: Inject REACT_APP_STAKING_REWARDS_ADDRESS
+        if: ${{ inputs.inject_ssm_secrets }}
+        uses: marvinpinto/action-inject-ssm-secrets@latest
+        with:
+          ssm_parameter: "/${{ inputs.ssm_environment }}-cere-staking-${{ inputs.stacking_lp  }}-REACT_APP_STAKING_REWARDS_ADDRESS"
+          env_variable_name: "REACT_APP_STAKING_REWARDS_ADDRESS"
+
+      - name: Inject REACT_APP_PAIR_CONTRACT_ADDRESS
+        if: ${{ inputs.inject_ssm_secrets }}
+        uses: marvinpinto/action-inject-ssm-secrets@latest
+        with:
+          ssm_parameter: "/${{ inputs.ssm_environment }}-cere-staking-${{ inputs.stacking_lp  }}-REACT_APP_PAIR_CONTRACT_ADDRESS"
+          env_variable_name: "REACT_APP_PAIR_CONTRACT_ADDRESS"
+
+      - name: Inject REACT_APP_NETWORK_URL
+        if: ${{ inputs.inject_ssm_secrets }}
+        uses: marvinpinto/action-inject-ssm-secrets@latest
+        with:
+          ssm_parameter: "/${{ inputs.ssm_environment }}-cere-staking-${{ inputs.stacking_lp  }}-REACT_APP_NETWORK_URL"
+          env_variable_name: "REACT_APP_NETWORK_URL"
+
+      - name: Inject REACT_APP_UNISWAP_CURRENCY_PAIR_URL
+        if: ${{ inputs.inject_ssm_secrets }}
+        uses: marvinpinto/action-inject-ssm-secrets@latest
+        with:
+          ssm_parameter: "/${{ inputs.ssm_environment }}-cere-staking-${{ inputs.stacking_lp  }}-REACT_APP_UNISWAP_CURRENCY_PAIR_URL"
+          env_variable_name: "REACT_APP_UNISWAP_CURRENCY_PAIR_URL"
+
+      - name: Inject REACT_APP_STAKING_MODE
+        if: ${{ inputs.inject_ssm_secrets }}
+        uses: marvinpinto/action-inject-ssm-secrets@latest
+        with:
+          ssm_parameter: "/${{ inputs.ssm_environment }}-cere-staking-${{ inputs.stacking_lp  }}-REACT_APP_STAKING_MODE"
+          env_variable_name: "REACT_APP_STAKING_MODE"
+
+      - name: Inject REACT_APP_STAKING_TOTAL_REWARD
+        if: ${{ inputs.inject_ssm_secrets }}
+        uses: marvinpinto/action-inject-ssm-secrets@latest
+        with:
+          ssm_parameter: "/${{ inputs.ssm_environment }}-cere-staking-${{ inputs.stacking_lp  }}-REACT_APP_STAKING_TOTAL_REWARD"
+          env_variable_name: "REACT_APP_STAKING_TOTAL_REWARD"
+
+      - name: Inject REACT_APP_STAKING_CAMPAIGN_DURATION_IN_DAYS
+        if: ${{ inputs.inject_ssm_secrets }}
+        uses: marvinpinto/action-inject-ssm-secrets@latest
+        with:
+          ssm_parameter: "/${{ inputs.ssm_environment }}-cere-staking-${{ inputs.stacking_lp  }}-REACT_APP_STAKING_CAMPAIGN_DURATION_IN_DAYS"
+          env_variable_name: "REACT_APP_STAKING_CAMPAIGN_DURATION_IN_DAYS"
+
+      - name: Inject INFURA_PROJECT_ID
+        if: ${{ inputs.inject_ssm_secrets }}
+        uses: marvinpinto/action-inject-ssm-secrets@latest
+        with:
+          ssm_parameter: "/${{ inputs.ssm_environment }}-cere-staking-${{ inputs.stacking_lp  }}-INFURA_PROJECT_ID"
+          env_variable_name: "INFURA_PROJECT_ID"
+
       - name: Build
+        working-directory: ${{ inputs.client_path }}
         env:
           CI: false
         run: ${{ inputs.build_command }}
