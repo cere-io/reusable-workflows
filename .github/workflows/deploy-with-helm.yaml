@@ -22,6 +22,14 @@ on:
       tag:
         required: true
         type: string
+      first-tag-name:
+        required: false
+        type: string
+        default: image.tag
+      second-tag-name:
+        required: false
+        type: string
+        default: global.image.tag
       environment:
         required: true
         type: string
@@ -58,11 +66,13 @@ jobs:
           NAMESPACE: ${{ inputs.namespace }}
           ENVIRONMENT: ${{ inputs.environment }}
           TAG: ${{ inputs.tag }}
+          FIRST_TAG_NAME: ${{ inputs.first-tag-name }}
+          SECOND_TAG_NAME: ${{ inputs.second-tag-name }}
         run: |
           helm upgrade --install ${HELM_RELEASE} ${HELM_REPO_PATH} \
             -f ${HELM_REPO_PATH}/envs/${ENVIRONMENT}.yaml \
-            --set image.tag=${TAG} \
-            --set global.image.tag=${TAG} \
+            --set ${FIRST_TAG_NAME}=${TAG} \
+            --set ${SECOND_TAG_NAME}=${TAG} \
             --debug --atomic --cleanup-on-fail \
             --timeout 5m \
             -n ${NAMESPACE}
