@@ -36,6 +36,14 @@ on:
         required: false
         default: "."
         type: string
+      install_dependencies_command:
+        required: false
+        default: apt update; apt install -y python3 libpq-dev make build-essential git
+        type: string
+      s3_sync_command:
+        required: false
+        default: aws s3 sync --metadata-directive="REPLACE" --exclude ".*" build/build/ s3://${S3_BUCKET}
+        type: string
 
       inject_ssm_secrets:
         required: false
@@ -73,9 +81,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install system packages
-        run: |
-          apt update
-          apt install -y python3 libpq-dev make build-essential git
+        run: ${{ inputs.install_dependencies_command }}
       - name: Restore cache
         uses: actions/cache@v2
         with:
@@ -165,11 +171,16 @@ jobs:
           NPM_TOKEN: ${{secrets.NPM_TOKEN}}
         run: ${{ inputs.build_command }}
 
+      - name: Zip artifacts
+        uses: montudor/action-zip@v1
+        with:
+          args: zip -qq -r artifacts.zip ${{ inputs.path_to_static_files_to_upload }}
+
       - name: Prepare artifacts
         uses: actions/upload-artifact@v2
         with:
           name: build
-          path: ${{ inputs.path_to_static_files_to_upload }}
+          path: ${{ github.workspace }}/artifacts.zip
 
   deploy-static-files:
     name: Deploy static files
@@ -184,7 +195,11 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: build
-          path: build
+          path: artifacts
+      - name: Unzip artifacts
+        uses: montudor/action-zip@v1
+        with:
+          args: unzip -qq artifacts/artifacts.zip -d build
       - name: Checkout repository
         if: ${{ !inputs.build_static_files }}
         uses: actions/checkout@v3
@@ -207,5 +222,5 @@ jobs:
           S3_BUCKET: ${{ secrets.S3_BUCKET_NAME }}
           CF_DISTRIBUTION_ID: ${{ secrets.CF_DISTRIBUTION_ID }}
         run: |
-          aws s3 sync --metadata-directive="REPLACE" --exclude ".*" build/ s3://${S3_BUCKET}
+          ${{ inputs.s3_sync_command }}
           aws cloudfront create-invalidation --distribution-id ${CF_DISTRIBUTION_ID} --paths "/*"
