@@ -42,7 +42,7 @@ on:
         type: string
       s3_sync_command:
         required: false
-        default: aws s3 sync --metadata-directive="REPLACE" --exclude ".*" build/build/ s3://${S3_BUCKET}
+        default: aws s3 sync --metadata-directive="REPLACE" --exclude ".*" build/${{ inputs.path_to_static_files_to_upload }} s3://${S3_BUCKET}
         type: string
 
       inject_ssm_secrets:
