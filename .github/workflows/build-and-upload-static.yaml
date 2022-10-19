@@ -218,7 +218,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.NETWORK_AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
       - name: Deploy
-        if: ${{ inputs.s3_sync_command != "" }}
+        if: ${{ inputs.s3_sync_command != '' }}
         env:
           S3_BUCKET: ${{ secrets.S3_BUCKET_NAME }}
           CF_DISTRIBUTION_ID: ${{ secrets.CF_DISTRIBUTION_ID }}
@@ -226,7 +226,7 @@ jobs:
           ${{ inputs.s3_sync_command }}
           aws cloudfront create-invalidation --distribution-id ${CF_DISTRIBUTION_ID} --paths "/*"
       - name: Deploy
-        if: ${{ inputs.s3_sync_command == "" }}
+        if: ${{ inputs.s3_sync_command == '' }}
         env:
           S3_BUCKET: ${{ secrets.S3_BUCKET_NAME }}
           CF_DISTRIBUTION_ID: ${{ secrets.CF_DISTRIBUTION_ID }}
