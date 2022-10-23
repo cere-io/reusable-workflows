@@ -74,5 +74,5 @@ jobs:
             --set ${FIRST_TAG_NAME}=${TAG} \
             --set ${SECOND_TAG_NAME}=${TAG} \
             --debug --atomic --cleanup-on-fail \
-            --timeout 5m \
+            --timeout 10m \
             -n ${NAMESPACE}
