@@ -7,17 +7,20 @@ on:
         required: true
         description: Platform to execute on
         type: string
-
       helm-repo-path:
         required: true
         type: string
       helm-release:
         required: true
         type: string
-
       namespace:
         required: true
         type: string
+
+      send_notification_to_slack:
+        required: false
+        type: boolean
+        default: false
 
       tag:
         required: true
@@ -43,6 +46,8 @@ on:
         required: true
       K8S_DEPLOYMENT_CONFIGS_REPOSITORY:
         required: true
+      SLACK_WEBHOOK:
+        required: false
 
 jobs:
   deploy:
@@ -76,3 +81,16 @@ jobs:
             --debug --atomic --cleanup-on-fail \
             --timeout 10m \
             -n ${NAMESPACE}
+
+  slack_notify:
+    if: ${{ inputs.send_notification_to_slack }}
+    needs: deploy
+    name: Send notification to slack
+    runs-on: ubuntu-latest
+    steps:
+      - uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_USERNAME: 'GITHUB_ACTIONS'
+          SLACK_ICON: 'https://github.com/cere-io/reusable-workflows/raw/master/Documentation/logo.png'
+          SLACK_FOOTER: ''

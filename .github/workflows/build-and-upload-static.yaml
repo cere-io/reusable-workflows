@@ -57,6 +57,12 @@ on:
         required: false
         type: string
 
+      send_notification_to_slack:
+        required: false
+        type: boolean
+        default: false
+
+
     secrets:
       NETWORK_AWS_ACCESS_KEY_ID:
         required: true
@@ -69,6 +75,8 @@ on:
       CF_DISTRIBUTION_ID:
         required: true
       NPM_TOKEN:
+        required: false
+      SLACK_WEBHOOK:
         required: false
 
 jobs:
@@ -233,3 +241,16 @@ jobs:
         run: |
           aws s3 sync --metadata-directive="REPLACE" --exclude ".*" build/${{ inputs.path_to_static_files_to_upload }}/ s3://${S3_BUCKET}
           aws cloudfront create-invalidation --distribution-id ${CF_DISTRIBUTION_ID} --paths "/*"
+
+  slack_notify:
+    if: ${{ inputs.send_notification_to_slack }}
+    needs: deploy-static-files
+    name: Send notification to slack
+    runs-on: ubuntu-latest
+    steps:
+      - uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_USERNAME: 'GITHUB_ACTIONS'
+          SLACK_ICON: 'https://github.com/cere-io/reusable-workflows/raw/master/Documentation/logo.ico'
+          SLACK_FOOTER: ''

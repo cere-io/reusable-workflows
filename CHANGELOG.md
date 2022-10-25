@@ -2,6 +2,13 @@
 
 All notable changes will be documented in this file.
 
+## [1.1.0] - 2022-10-25
+
+### deploy-with-helm.yaml
+### build-and-upload-static.yaml
+
+- Add possibility to send notification to slack channel
+
 ## [1.0.0] - 2022-10-08
 
 ### build-and-push-docker.yaml
