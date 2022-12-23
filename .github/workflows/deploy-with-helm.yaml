@@ -58,10 +58,10 @@ jobs:
         with:
           repository: ${{ secrets.K8S_DEPLOYMENT_CONFIGS_REPOSITORY }}
           token: ${{ secrets.TRIGGER_GITHUB_TOKEN }}
-      - uses: azure/setup-helm@v1
+      - uses: azure/setup-helm@v3
         with:
           version: ${{ secrets.HELM_VERSION }}
-      - uses: azure/setup-kubectl@v1
+      - uses: azure/setup-kubectl@v3
         with:
           version: ${{ secrets.KUBECTL_VERSION }}
       - name: Deploy
