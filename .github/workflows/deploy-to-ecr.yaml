@@ -81,7 +81,7 @@ jobs:
         run: |
           echo "version=${{ inputs.environment }}-${{ github.run_attempt}}-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
-      - name: Build and push docker image (private repo)
+      - name: Build and push docker image to ECR
         uses: docker/build-push-action@v3
         with:
           context: ${{ inputs.context }}
