@@ -5,8 +5,9 @@ on:
     inputs:
       runs-on:
         required: true
-        description: Platform to execute on
+        description: 'Platform to execute on. Default ["self-hosted", "cere-io-large-workers"]'
         type: string
+        default: '["self-hosted", "cere-io-large-workers"]'
 
       aws_account_id:
         required: true
@@ -15,28 +16,33 @@ on:
 
       aws_region:
         required: false
-        description: Destination AWS region
+        description: "Destination AWS region. Default us-west-2"
         type: string
-        default: us-west-2
+        default: 'us-west-2'
 
       file:
         required: false
+        description: "Path to the Dockerfile. Default: ./Dockerfile"
         type: string
-        default: ./Dockerfile
+        default: './Dockerfile'
 
       context:
         required: false
+        description: "Build's context. Defaults ./"
         type: string
-        default: ./
+        default: './'
 
       environment:
         required: true
+        description: "Build environment, effects image tag prefix. Default dev"
         type: string
+        default: 'dev'
 
       repository:
         required: false
-        default: ${{ github.event.repository.name }}
+        description: "Image repository. Defaults to github repository name."
         type: string
+        default: ${{ github.event.repository.name }}
 
     secrets:
       NPM_TOKEN:
