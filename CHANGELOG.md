@@ -2,6 +2,10 @@
 
 All notable changes will be documented in this file.
 
+## [1.3.0] - 2022-02-24
+* ### deploy-to-ecr.yaml
+  * Support for direct deployments to the ECR.
+
 ## [1.2.0] - 2022-12-23
 * ### build-and-push-docker.yaml
 * ### build-and-upload-static.yaml
