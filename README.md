@@ -6,9 +6,11 @@ There are four types of reusable workflows:
 
 2) [Build static content, upload to s3 and run cloudfront invalidation](.github/workflows/build-and-upload-static.yaml)
 
-3) [Deploy docker image from registry to k8s via helm](.github/workflows/deploy-with-helm.yaml)
+3) [Build and deploy image to ECR](.github/workflows/deploy-to-ecr.yaml)
 
-4) [Run jdk tests via gradle](.github/workflows/tests-jdk-gradle.yaml)
+4) [Deploy docker image from registry to k8s via helm](.github/workflows/deploy-with-helm.yaml)
+
+5) [Run jdk tests via gradle](.github/workflows/tests-jdk-gradle.yaml)
 
 Versioning template: Major.Minor.Patch (1.0.0)
 
