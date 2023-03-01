@@ -92,5 +92,4 @@ jobs:
             NPM_TOKEN=${{ secrets.NPM_TOKEN }}
             ENV_FILE_NAME=${{ inputs.environment }}
           tags: |
-            ${{ steps.login-ecr.outputs.registry }}/${{ inputs.repository }}:latest
             ${{ steps.login-ecr.outputs.registry }}/${{ inputs.repository }}:${{ steps.version.outputs.version }}
