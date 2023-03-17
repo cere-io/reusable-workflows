@@ -161,7 +161,7 @@ jobs:
 
   slack_notify:
     if: ${{ inputs.send_notification_to_slack }}
-    needs: deploy-static-files
+    needs: deploy
     name: Send notification to slack
     runs-on: ubuntu-latest
     steps:
