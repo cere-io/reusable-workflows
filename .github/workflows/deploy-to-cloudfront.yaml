@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       runs-on:
-        required: true
+        required: false
         description: 'Platform to execute on. Default ["self-hosted", "cere-io-large-workers"]'
         type: string
         default: '["self-hosted", "cere-io-large"]'
