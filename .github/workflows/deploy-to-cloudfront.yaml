@@ -1,0 +1,173 @@
+name: Deploy to CloudFront
+
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        required: true
+        description: 'Platform to execute on. Default ["self-hosted", "cere-io-large-workers"]'
+        type: string
+        default: '["self-hosted", "cere-io-large"]'
+
+      aws_account_id:
+        required: true
+        description: Destination AWS Account
+        type: string
+
+      build_static_files:
+        required: false
+        default: true
+        description: Build static files?
+        type: boolean
+
+      build_container:
+        required: true
+        description: Base image to build
+        type: string
+
+      install_dependencies_command:
+        required: false
+        type: string
+
+      install_packages_command:
+        required: false
+        description: Command to install packages
+        type: string
+
+      build_command:
+        required: false
+        description: Build command
+        type: string
+
+      path_to_static_files_to_upload:
+        required: false
+        default: "build"
+        description: Path to files to upload
+        type: string
+
+      client_path:
+        required: false
+        default: "."
+        type: string
+
+      s3_bucket_name:
+        required: false
+        description: Name of S3 bucket for CloudFront. Defaults to cloudfront_name
+        type: string
+
+      send_notification_to_slack:
+        required: false
+        type: boolean
+        default: false
+
+    secrets:
+      NPM_TOKEN:
+        required: false
+      SLACK_WEBHOOK:
+        required: false
+
+jobs:
+  build:
+    if: ${{ inputs.build_static_files }}
+    name: Build static files
+    runs-on: ${{ fromJSON(inputs.runs-on) }}
+    container:
+      image: ${{ inputs.build_container }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install system packages
+        run: ${{ inputs.install_dependencies_command }}
+
+      - name: Restore cache
+        uses: actions/cache@v3
+        with:
+          path: '${{ inputs.client_path }}/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('${{ inputs.client_path }}/yarn.lock') }}
+
+      - name: Install packages
+        working-directory: ${{ inputs.client_path }}
+        run: ${{ inputs.install_packages_command }}
+        env:
+          NPM_TOKEN: ${{secrets.NPM_TOKEN}}
+
+      - name: Build
+        working-directory: ${{ inputs.client_path }}
+        env:
+          CI: false
+          NPM_TOKEN: ${{secrets.NPM_TOKEN}}
+        run: ${{ inputs.build_command }}
+
+      - name: Zip artifacts
+        uses: montudor/action-zip@v1
+        with:
+          args: zip -qq -r artifacts.zip ${{ inputs.path_to_static_files_to_upload }}
+
+      - name: Prepare artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build
+          path: ${{ github.workspace }}/artifacts.zip
+
+  deploy:
+    needs: build
+    name: Deploy static files
+    if: needs.build-static-files.result == 'success' || needs.build-static-files.result == 'skipped'
+    runs-on: ${{ fromJSON(inputs.runs-on) }}
+    steps:
+      - name: Restore build
+        if: ${{ inputs.build_static_files }}
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ inputs.path_to_static_files_to_upload }}
+          path: artifacts
+
+      - name: Unzip artifacts
+        if: ${{ inputs.build_static_files }}
+        uses: montudor/action-zip@v1
+        with:
+          args: unzip -qq artifacts/artifacts.zip -d ${{ inputs.path_to_static_files_to_upload }}
+
+      - name: Checkout repository
+        if: ${{ !inputs.build_static_files }}
+        uses: actions/checkout@v3
+        with:
+          path: ${{ inputs.path_to_static_files_to_upload }}
+
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::${{ inputs.aws_account_id }}:role/github
+          role-session-name: ${{ github.event.repository.name }}
+          aws-region: ${{ inputs.aws_region }}
+
+      - name: Upload files
+        run: |
+          aws s3 sync \
+            --metadata-directive="REPLACE" \
+            --exclude ".*" \
+            ${{ inputs.path_to_static_files_to_upload }}/ s3://${{ inputs.s3_bucket_name }}
+
+      - name: Invalidate cache
+        run: |
+          for id in $(
+            aws cloudfront list-distributions \
+              --query "DistributionList.Items[*].{id:Id,origin:Origins.Items[0].Id}[?origin=='${{ inputs.s3_bucket_name }}'].id" \
+              --output text); do 
+              aws cloudfront create-invalidation \
+                --distribution-id $id \
+                --paths "/*"
+          done
+
+  slack_notify:
+    if: ${{ inputs.send_notification_to_slack }}
+    needs: deploy-static-files
+    name: Send notification to slack
+    runs-on: ubuntu-latest
+    steps:
+      - uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_USERNAME: 'GITHUB_ACTIONS'
+          SLACK_ICON: 'https://github.com/cere-io/reusable-workflows/raw/master/Documentation/logo.ico'
+          SLACK_FOOTER: ''
