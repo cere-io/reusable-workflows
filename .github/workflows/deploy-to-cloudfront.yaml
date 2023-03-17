@@ -112,7 +112,7 @@ jobs:
   deploy:
     needs: build
     name: Deploy static files
-    if: needs.build-static-files.result == 'success' || needs.build-static-files.result == 'skipped'
+    if: needs.build.result == 'success' || needs.build.result == 'skipped'
     runs-on: ${{ fromJSON(inputs.runs-on) }}
     steps:
       - name: Restore build
