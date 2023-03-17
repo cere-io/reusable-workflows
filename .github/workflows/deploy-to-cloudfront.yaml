@@ -159,6 +159,9 @@ jobs:
                 --paths "/*"
           done
 
+    outputs:
+      fqdn: "https://${{ inputs.s3_bucket_name }}/"
+
   slack_notify:
     if: ${{ inputs.send_notification_to_slack }}
     needs: deploy
