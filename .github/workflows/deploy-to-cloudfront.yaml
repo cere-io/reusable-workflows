@@ -5,7 +5,7 @@ on:
     inputs:
       runs-on:
         required: false
-        description: 'Platform to execute on. Default ["self-hosted", "cere-io-large-workers"]'
+        description: 'Platform to execute on. Default ["self-hosted", "cere-io-large"]'
         type: string
         default: '["self-hosted", "cere-io-large"]'
 
