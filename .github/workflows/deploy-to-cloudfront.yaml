@@ -89,13 +89,13 @@ jobs:
         working-directory: ${{ inputs.client_path }}
         run: ${{ inputs.install_packages_command }}
         env:
-          NPM_TOKEN: ${{secrets.NPM_TOKEN}}
+          NPM_TOKEN: ${{secrets.NPM_TOKEN_READ}}
 
       - name: Build
         working-directory: ${{ inputs.client_path }}
         env:
           CI: false
-          NPM_TOKEN: ${{secrets.NPM_TOKEN}}
+          NPM_TOKEN: ${{secrets.NPM_TOKEN_READ}}
         run: ${{ inputs.build_command }}
 
       - name: Zip artifacts
