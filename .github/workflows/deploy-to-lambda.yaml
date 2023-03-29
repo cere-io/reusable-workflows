@@ -1,0 +1,157 @@
+name: Deploy Lambda Function
+
+on:
+  workflow_call:
+    inputs:
+      aws_account_id:
+        required: true
+        description: Destination AWS Account
+        type: string
+
+      lambda_function_name:
+        required: true
+        description: Name of the target Lambda Function
+        type: string
+
+      runs-on:
+        required: false
+        description: 'Platform to execute on. Default ["self-hosted", "cere-io-large"]'
+        type: string
+        default: '["self-hosted", "cere-io-large"]'
+
+      build_static_files:
+        required: false
+        default: false
+        description: Build static files?
+        type: boolean
+
+      build_container:
+        required: false
+        description: Base image to build
+        type: string
+
+      install_dependencies_command:
+        required: false
+        type: string
+
+      install_packages_command:
+        required: false
+        description: Command to install packages
+        type: string
+
+      build_command:
+        required: false
+        description: Build command
+        type: string
+
+      path_to_application_files_to_upload:
+        required: false
+        default: 'build'
+        description: Path to files to upload
+        type: string
+
+      client_path:
+        required: false
+        default: '.'
+        type: string
+
+    secrets:
+      NPM_TOKEN:
+        required: false
+
+jobs:
+  build:
+    if: "${{ inputs.build_static_files }}"
+    name: Build static files
+    runs-on: "${{ fromJSON(inputs.runs-on) }}"
+    container:
+      image: "${{ inputs.build_container }}"
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install system packages
+        run: "${{ inputs.install_dependencies_command }}"
+
+      - name: Restore cache
+        uses: actions/cache@v3
+        with:
+          path: "${{ inputs.client_path }}/node_modules"
+          key: "${{ runner.os }}-modules-${{ hashFiles('${{ inputs.client_path }}/yarn.lock') }}"
+
+      - name: Install packages
+        working-directory: "${{ inputs.client_path }}"
+        run: "${{ inputs.install_packages_command }}"
+        env:
+          NPM_TOKEN: "${{secrets.NPM_TOKEN}}"
+
+      - name: Build
+        working-directory: "${{ inputs.client_path }}"
+        env:
+          CI: false
+          NPM_TOKEN: "${{secrets.NPM_TOKEN}}"
+        run: "${{ inputs.build_command }}"
+
+      - name: Zip artifact
+        uses: montudor/action-zip@v1
+        with:
+          args: |
+            zip -qq -r artifact.zip \
+              "${{ inputs.path_to_application_files_to_upload }}"
+
+      - name: Prepare artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: lambda-function
+          path: "${{ github.workspace }}/artifact.zip"
+
+  prepare-artifact:
+    if: "${{ ! inputs.build_static_files }}"
+    name: Prepare Artifact
+    runs-on: "${{ fromJSON(inputs.runs-on) }}"
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Zip artifact
+        uses: montudor/action-zip@v1
+        with:
+          args: |
+            zip -qq -r artifact.zip \
+              "${{ inputs.path_to_application_files_to_upload }}"
+
+      - name: Prepare artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: lambda-function
+          path: "${{ github.workspace }}/artifact.zip"
+
+  deploy:
+    name: Deploy Lambda Function
+    needs:
+      - build
+      - prepare-artifact
+    if: (needs.build.result == 'success' || needs.build.result == 'skipped') && (needs.prepare-artifact.result == 'success' || needs.prepare-artifact.result == 'skipped')
+    runs-on: "${{ fromJSON(inputs.runs-on) }}"
+    steps:
+      - name: Restore artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: lambda-function
+          path: artifacts
+
+      - name: Configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: "arn:aws:iam::${{ inputs.aws_account_id }}:role/github"
+          role-session-name: "${{ github.event.repository.name }}"
+          aws-region: 'us-east-1'
+
+      - name: Upload files
+        run:
+          aws s3 mv \
+            artifacts/artifact.zip \
+            "s3://cere-deployments-${{ inputs.aws_account_id }}/lambda/${{ inputs.lambda_function_name }}.zip"
+          
+          aws lambda update-function-code \
+            --function-name "${{ inputs.lambda_function_name }}" \
+            --s3-bucket "cere-deployments-${{ inputs.aws_account_id }}" \
+            --s3-key "lambda/${{ inputs.lambda_function_name }}.zip"
