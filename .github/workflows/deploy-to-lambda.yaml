@@ -99,9 +99,6 @@ jobs:
           NPM_TOKEN: "${{secrets.NPM_TOKEN}}"
         run: "${{ inputs.build_command }}"
 
-      - name: Install zip
-        uses: montudor/action-zip@v1
-
       - name: Zip artifact
         working-directory: "${{ inputs.client_path }}"
         run:
@@ -120,9 +117,6 @@ jobs:
     runs-on: "${{ fromJSON(inputs.runs-on) }}"
     steps:
       - uses: actions/checkout@v3
-
-      - name: Install zip
-        uses: montudor/action-zip@v1
 
       - name: Zip artifact
         working-directory: "${{ inputs.client_path }}"
