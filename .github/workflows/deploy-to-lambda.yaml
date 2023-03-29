@@ -100,16 +100,17 @@ jobs:
         run: "${{ inputs.build_command }}"
 
       - name: Zip artifact
-        working-directory: "${{ inputs.client_path }}"
-        run:
-          zip -qq -r artifact.zip \
-            "${{ inputs.path_to_application_files_to_upload }}"
+        uses: montudor/action-zip@v1
+        with:
+          args: |
+            cd "${{ inputs.client_path }}/${{ inputs.path_to_application_files_to_upload }}" && \
+              zip -qq -r "${{ github.workspace }}/${{ inputs.lambda_function_name }}.zip" .
 
       - name: Prepare artifact
         uses: actions/upload-artifact@v3
         with:
           name: lambda-function
-          path: "${{ github.workspace }}/${{ inputs.client_path }}/artifact.zip"
+          path: "${{ github.workspace }}/${{ inputs.lambda_function_name }}.zip"
 
   archive:
     if: "${{ ! inputs.build_files }}"
@@ -119,16 +120,17 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Zip artifact
-        working-directory: "${{ inputs.client_path }}"
-        run:
-          zip -qq -r artifact.zip \
-            "${{ inputs.path_to_application_files_to_upload }}"
+        uses: montudor/action-zip@v1
+        with:
+          args: |
+            cd "${{ inputs.client_path }}/${{ inputs.path_to_application_files_to_upload }}" && \
+              zip -qq -r "${{ github.workspace }}/${{ inputs.lambda_function_name }}.zip" .
 
       - name: Prepare artifact
         uses: actions/upload-artifact@v3
         with:
           name: lambda-function
-          path: "${{ github.workspace }}/${{ inputs.client_path }}/artifact.zip"
+          path: "${{ github.workspace }}/${{ inputs.lambda_function_name }}.zip"
 
   deploy:
     name: Deploy Lambda Function
@@ -154,8 +156,8 @@ jobs:
       - name: Upload files
         run:
           aws s3 mv \
-            lambda/artifact.zip \
-            "s3://cere-deployments-${{ inputs.aws_account_id }}/lambda/${{ inputs.lambda_function_name }}.zip"
+            lambda/${{ inputs.lambda_function_name }}.zip \
+            "s3://cere-deployments-${{ inputs.aws_account_id }}/lambda/"
           
           aws lambda update-function-code \
             --function-name "${{ inputs.lambda_function_name }}" \
