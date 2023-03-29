@@ -62,7 +62,7 @@ on:
 jobs:
   build:
     if: "${{ inputs.build_files }}"
-    name: Build static files
+    name: Build Lambda Function
     runs-on: "${{ fromJSON(inputs.runs-on) }}"
     container:
       image: "${{ inputs.build_container }}"
@@ -70,7 +70,10 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Install system packages
-        run: "${{ inputs.install_dependencies_command }}"
+        run:
+          apt update && \
+            apt install -y zip
+          "${{ inputs.install_dependencies_command }}"
 
       - name: Get npm cache directory
         id: npm-cache-dir
@@ -99,9 +102,6 @@ jobs:
           NPM_TOKEN: "${{secrets.NPM_TOKEN}}"
         run: "${{ inputs.build_command }}"
 
-      - name: Install zip
-        uses: montudor/action-zip@v1
-
       - name: Zip artifact
         working-directory: "${{ inputs.client_path }}/${{ inputs.path_to_application_files_to_upload }}"
         run: |
@@ -119,9 +119,6 @@ jobs:
     runs-on: "${{ fromJSON(inputs.runs-on) }}"
     steps:
       - uses: actions/checkout@v3
-
-      - name: Install zip
-        uses: montudor/action-zip@v1
 
       - name: Zip artifact
         working-directory: "${{ inputs.client_path }}/${{ inputs.path_to_application_files_to_upload }}"
