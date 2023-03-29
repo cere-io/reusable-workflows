@@ -105,13 +105,13 @@ jobs:
       - name: Zip artifact
         working-directory: "${{ inputs.client_path }}/${{ inputs.path_to_application_files_to_upload }}"
         run: |
-          zip -qq -r "${{ github.workspace }}/${{ inputs.lambda_function_name }}.zip" ./
+          zip -qq -r "${{ inputs.lambda_function_name }}.zip" ./
 
       - name: Prepare artifact
         uses: actions/upload-artifact@v3
         with:
           name: lambda-function
-          path: "${{ github.workspace }}/${{ inputs.lambda_function_name }}.zip"
+          path: "${{ inputs.client_path }}/${{ inputs.path_to_application_files_to_upload }}/${{ inputs.lambda_function_name }}.zip"
 
   archive:
     if: "${{ ! inputs.build_files }}"
@@ -123,13 +123,13 @@ jobs:
       - name: Zip artifact
         working-directory: "${{ inputs.client_path }}/${{ inputs.path_to_application_files_to_upload }}"
         run: |
-          zip -qq -r "${{ github.workspace }}/${{ inputs.lambda_function_name }}.zip" ./
+          zip -qq -r "${{ inputs.lambda_function_name }}.zip" ./
 
       - name: Prepare artifact
         uses: actions/upload-artifact@v3
         with:
           name: lambda-function
-          path: "${{ github.workspace }}/${{ inputs.lambda_function_name }}.zip"
+          path: "${{ inputs.client_path }}/${{ inputs.path_to_application_files_to_upload }}/${{ inputs.lambda_function_name }}.zip"
 
   deploy:
     name: Deploy Lambda Function
