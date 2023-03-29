@@ -46,13 +46,13 @@ on:
 
       path_to_application_files_to_upload:
         required: false
-        default: '.'
+        default: ''
         description: Path to files to upload
         type: string
 
       client_path:
         required: false
-        default: '.'
+        default: ''
         type: string
 
     secrets:
@@ -84,26 +84,26 @@ jobs:
         uses: actions/cache@v3
         id: npm-cache
         with:
-          path: ${{ inputs.client_path }}/${{ steps.npm-cache-dir.outputs.dir }}
+          path: ${{ github.workspace }}/${{ inputs.client_path }}/${{ steps.npm-cache-dir.outputs.dir }}
           key: ${{ runner.os }}-node-${{ hashFiles('${{ inputs.client_path }}//package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
       - name: Install packages
-        working-directory: "${{ inputs.client_path }}"
+        working-directory: "${{ github.workspace }}/${{ inputs.client_path }}"
         run: "${{ inputs.install_packages_command }}"
         env:
           NPM_TOKEN: "${{secrets.NPM_TOKEN}}"
 
       - name: Build
-        working-directory: "${{ inputs.client_path }}"
+        working-directory: "${{ github.workspace }}/${{ inputs.client_path }}"
         env:
           CI: false
           NPM_TOKEN: "${{secrets.NPM_TOKEN}}"
         run: "${{ inputs.build_command }}"
 
       - name: Zip artifact
-        working-directory: "${{ inputs.client_path }}/${{ inputs.path_to_application_files_to_upload }}"
+        working-directory: "${{ github.workspace }}/${{ inputs.client_path }}/${{ inputs.path_to_application_files_to_upload }}"
         run: |
           zip -qq -r "${{ inputs.lambda_function_name }}.zip" ./
 
@@ -111,7 +111,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: lambda-function
-          path: "${{ inputs.client_path }}/${{ inputs.path_to_application_files_to_upload }}/${{ inputs.lambda_function_name }}.zip"
+          path: "${{ github.workspace }}/${{ inputs.client_path }}/${{ inputs.path_to_application_files_to_upload }}/${{ inputs.lambda_function_name }}.zip"
 
   archive:
     if: "${{ ! inputs.build_files }}"
@@ -121,7 +121,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Zip artifact
-        working-directory: "${{ inputs.client_path }}/${{ inputs.path_to_application_files_to_upload }}"
+        working-directory: "${{ github.workspace }}/${{ inputs.client_path }}/${{ inputs.path_to_application_files_to_upload }}"
         run: |
           zip -qq -r "${{ inputs.lambda_function_name }}.zip" ./
 
@@ -129,7 +129,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: lambda-function
-          path: "${{ inputs.client_path }}/${{ inputs.path_to_application_files_to_upload }}/${{ inputs.lambda_function_name }}.zip"
+          path: "${{ github.workspace }}/${{ inputs.client_path }}/${{ inputs.path_to_application_files_to_upload }}/${{ inputs.lambda_function_name }}.zip"
 
   deploy:
     name: Deploy Lambda Function
