@@ -46,7 +46,7 @@ on:
 
       path_to_application_files_to_upload:
         required: false
-        default: 'build'
+        default: '.'
         description: Path to files to upload
         type: string
 
@@ -95,14 +95,14 @@ jobs:
         uses: montudor/action-zip@v1
         with:
           args: |
-            zip -qq -r artifact.zip \
-              "${{ inputs.path_to_application_files_to_upload }}"
+            zip -qq -r "${{ inputs.client_path }}/artifact.zip" \
+              "${{ inputs.client_path }}/${{ inputs.path_to_application_files_to_upload }}"
 
       - name: Prepare artifact
         uses: actions/upload-artifact@v3
         with:
           name: lambda-function
-          path: "${{ github.workspace }}/artifact.zip"
+          path: "${{ github.workspace }}/${{ inputs.client_path }}/artifact.zip"
 
   prepare-artifact:
     if: "${{ ! inputs.build_static_files }}"
@@ -115,14 +115,14 @@ jobs:
         uses: montudor/action-zip@v1
         with:
           args: |
-            zip -qq -r artifact.zip \
-              "${{ inputs.path_to_application_files_to_upload }}"
+            zip -qq -r "${{ inputs.client_path }}/artifact.zip" \
+              "${{ inputs.client_path }}/${{ inputs.path_to_application_files_to_upload }}"
 
       - name: Prepare artifact
         uses: actions/upload-artifact@v3
         with:
           name: lambda-function
-          path: "${{ github.workspace }}/artifact.zip"
+          path: "${{ github.workspace }}/${{ inputs.client_path }}/artifact.zip"
 
   deploy:
     name: Deploy Lambda Function
@@ -136,7 +136,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: lambda-function
-          path: artifacts
+          path: lambda
 
       - name: Configure aws credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -148,7 +148,7 @@ jobs:
       - name: Upload files
         run:
           aws s3 mv \
-            artifacts/artifact.zip \
+            lambda/artifact.zip \
             "s3://cere-deployments-${{ inputs.aws_account_id }}/lambda/${{ inputs.lambda_function_name }}.zip"
           
           aws lambda update-function-code \
