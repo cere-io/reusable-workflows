@@ -72,19 +72,19 @@ jobs:
       - name: Install system packages
         run: "${{ inputs.install_dependencies_command }}"
 
-      - name: Get yarn cache directory path
+      - name: Get npm cache directory
+        id: npm-cache-dir
         working-directory: "${{ inputs.client_path }}"
-        id: yarn-cache-dir-path
-        run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
+        run: echo "dir=$(npm config get cache)" >> ${GITHUB_OUTPUT}
 
       - name: Restore cache
         uses: actions/cache@v3
-        id: yarn-cache
+        id: npm-cache
         with:
-          path: ${{ inputs.client_path }}/${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('${{ inputs.client_path }}/yarn.lock') }}
+          path: ${{ inputs.client_path }}/${{ steps.npm-cache-dir.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('${{ inputs.client_path }}//package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-yarn-
+            ${{ runner.os }}-node-
 
       - name: Install packages
         working-directory: "${{ inputs.client_path }}"
