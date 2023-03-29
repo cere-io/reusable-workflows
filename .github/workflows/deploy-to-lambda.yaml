@@ -71,8 +71,8 @@ jobs:
 
       - name: Install system packages
         run:
-          apt update && \
-            apt install -y zip && \
+          apt-get update && \
+            apt-get install -y zip && \
           "${{ inputs.install_dependencies_command }}"
 
       - name: Get npm cache directory
