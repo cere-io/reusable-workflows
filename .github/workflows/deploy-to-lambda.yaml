@@ -129,7 +129,7 @@ jobs:
     needs:
       - build
       - archive
-    if: (needs.build.result == 'success' && needs.archive.result == 'skipped') || (needs.archive.result == 'success' && needs.build.result == 'skipped')
+#    if: (needs.build.result == 'success' && needs.archive.result == 'skipped') || (needs.archive.result == 'success' && needs.build.result == 'skipped')
     runs-on: "${{ fromJSON(inputs.runs-on) }}"
     steps:
       - name: Restore artifact
