@@ -100,11 +100,10 @@ jobs:
         run: "${{ inputs.build_command }}"
 
       - name: Zip artifact
-        uses: montudor/action-zip@v1
-        with:
-          args: |
-            zip -qq -r "${{ inputs.client_path }}/artifact.zip" \
-              "${{ inputs.client_path }}/${{ inputs.path_to_application_files_to_upload }}"
+        working-directory: "${{ inputs.client_path }}"
+        run:
+          zip -qq -r artifact.zip \
+            "${{ inputs.path_to_application_files_to_upload }}"
 
       - name: Prepare artifact
         uses: actions/upload-artifact@v3
@@ -120,11 +119,10 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Zip artifact
-        uses: montudor/action-zip@v1
-        with:
-          args: |
-            zip -qq -r "${{ inputs.client_path }}/artifact.zip" \
-              "${{ inputs.client_path }}/${{ inputs.path_to_application_files_to_upload }}"
+        working-directory: "${{ inputs.client_path }}"
+        run:
+          zip -qq -r artifact.zip \
+            "${{ inputs.path_to_application_files_to_upload }}"
 
       - name: Prepare artifact
         uses: actions/upload-artifact@v3
