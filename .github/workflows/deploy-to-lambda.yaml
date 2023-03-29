@@ -19,7 +19,7 @@ on:
         type: string
         default: '["self-hosted", "cere-io-large"]'
 
-      build_static_files:
+      build_files:
         required: false
         default: false
         description: Build static files?
@@ -61,7 +61,7 @@ on:
 
 jobs:
   build:
-    if: "${{ inputs.build_static_files }}"
+    if: "${{ inputs.build_files }}"
     name: Build static files
     runs-on: "${{ fromJSON(inputs.runs-on) }}"
     container:
@@ -105,7 +105,7 @@ jobs:
           path: "${{ github.workspace }}/${{ inputs.client_path }}/artifact.zip"
 
   prepare-artifact:
-    if: "${{ ! inputs.build_static_files }}"
+    if: "${{ ! inputs.build_files }}"
     name: Prepare Artifact
     runs-on: "${{ fromJSON(inputs.runs-on) }}"
     steps:
