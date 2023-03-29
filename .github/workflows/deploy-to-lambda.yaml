@@ -104,7 +104,7 @@ jobs:
           name: lambda-function
           path: "${{ github.workspace }}/${{ inputs.client_path }}/artifact.zip"
 
-  prepare-artifact:
+  archive:
     if: "${{ ! inputs.build_files }}"
     name: Prepare Artifact
     runs-on: "${{ fromJSON(inputs.runs-on) }}"
@@ -129,7 +129,7 @@ jobs:
     needs:
       - build
       - prepare-artifact
-    if: (needs.build.result == 'success' || needs.build.result == 'skipped') && (needs.prepare-artifact.result == 'success' || needs.prepare-artifact.result == 'skipped')
+    if: (needs.build.result == 'success' && needs.archive.result == 'skipped') || (needs.archive.result == 'success' && needs.build.result == 'skipped')
     runs-on: "${{ fromJSON(inputs.runs-on) }}"
     steps:
       - name: Restore artifact
