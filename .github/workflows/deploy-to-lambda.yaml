@@ -153,11 +153,12 @@ jobs:
           aws-region: 'us-east-1'
 
       - name: Upload files
-        run:
+        run: |
           aws s3 mv \
             lambda/${{ inputs.lambda_function_name }}.zip \
             "s3://cere-deployments-${{ inputs.aws_account_id }}/lambda/${{ inputs.lambda_function_name }}.zip"
-          
+      - name: Deploy Function
+        run: |
           aws lambda update-function-code \
             --function-name "${{ inputs.lambda_function_name }}" \
             --s3-bucket "cere-deployments-${{ inputs.aws_account_id }}" \
