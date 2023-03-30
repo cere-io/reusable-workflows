@@ -166,6 +166,7 @@ jobs:
           aws s3 mv \
             lambda/${{ inputs.lambda_function_name }}.zip \
             "s3://cere-deployments-${{ inputs.aws_account_id }}/lambda/${{ inputs.lambda_function_name }}.zip"
+
       - name: Deploy Function
         run: |
           aws lambda update-function-code \
