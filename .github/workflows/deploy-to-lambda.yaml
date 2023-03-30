@@ -159,7 +159,7 @@ jobs:
         with:
           role-to-assume: "arn:aws:iam::${{ inputs.aws_account_id }}:role/github"
           role-session-name: "${{ github.event.repository.name }}"
-          aws-region: 'us-east-1'
+          aws-region: "${{ inputs.aws_region }}"
 
       - name: Upload files
         run: |
