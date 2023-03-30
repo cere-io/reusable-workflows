@@ -59,6 +59,7 @@ jobs:
     runs-on: ${{ fromJSON(inputs.runs-on) }}
     outputs:
       version: ${{ steps.version.outputs.version }}
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v3
 

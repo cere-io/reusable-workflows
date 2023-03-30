@@ -66,6 +66,7 @@ jobs:
     runs-on: "${{ fromJSON(inputs.runs-on) }}"
     container:
       image: "${{ inputs.build_container }}"
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v3
 
@@ -117,6 +118,7 @@ jobs:
     if: "${{ ! inputs.build_files }}"
     name: Prepare Artifact
     runs-on: "${{ fromJSON(inputs.runs-on) }}"
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v3
 
@@ -138,6 +140,7 @@ jobs:
       - archive
     if: always() && (needs.build.result == 'success' || needs.archive.result == 'success')
     runs-on: "${{ fromJSON(inputs.runs-on) }}"
+    timeout-minutes: 10
     steps:
       - name: Restore artifact
         uses: actions/download-artifact@v3
