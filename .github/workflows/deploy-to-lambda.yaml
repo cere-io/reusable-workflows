@@ -117,7 +117,7 @@ jobs:
       - name: Prepare artifact
         uses: actions/upload-artifact@v3
         with:
-          name: lambda-function
+          name: ${{ inputs.lambda_function_name }}
           path: "${{ github.workspace }}/${{ inputs.client_path }}/${{ inputs.path_to_application_files_to_upload }}/${{ inputs.lambda_function_name }}.zip"
 
   archive:
@@ -136,7 +136,7 @@ jobs:
       - name: Prepare artifact
         uses: actions/upload-artifact@v3
         with:
-          name: lambda-function
+          name: ${{ inputs.lambda_function_name }}
           path: "${{ github.workspace }}/${{ inputs.client_path }}/${{ inputs.path_to_application_files_to_upload }}/${{ inputs.lambda_function_name }}.zip"
 
   deploy:
@@ -151,7 +151,7 @@ jobs:
       - name: Restore artifact
         uses: actions/download-artifact@v3
         with:
-          name: lambda-function
+          name: ${{ inputs.lambda_function_name }}
           path: lambda
 
       - name: Configure aws credentials
