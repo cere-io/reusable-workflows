@@ -19,6 +19,12 @@ on:
         type: string
         default: '["self-hosted", "cere-io-large"]'
 
+      aws_region:
+        required: false
+        description: Target AWS region. Defaults "us-west-2"
+        default: us-west-2
+        type: string
+
       build_files:
         required: false
         default: false
