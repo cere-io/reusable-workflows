@@ -148,6 +148,7 @@ jobs:
           aws s3 sync \
             --metadata-directive="REPLACE" \
             --exclude ".*" \
+            --delete \
             ${{ inputs.path_to_static_files_to_upload }}/ s3://${{ inputs.s3_bucket_name }}
 
       - name: Invalidate cache
