@@ -114,7 +114,7 @@ jobs:
     needs: build
     name: Deploy static files
     if: needs.build.result == 'success' || needs.build.result == 'skipped'
-    runs-on: ${{ fromJSON(inputs.runs-on) }}
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - name: Restore build
@@ -157,9 +157,16 @@ jobs:
             aws cloudfront list-distributions \
                 --query 'DistributionList.Items[*].{id:Id,origin:Origins.Items[0].DomainName}[?starts_with(origin, `${{ inputs.s3_bucket_name }}`)].id' \
                 --output text); do 
-              aws cloudfront create-invalidation \
+              invalidation_id=$(
+                aws cloudfront create-invalidation \
+                  --distribution-id $id \
+                  --paths "/*" \
+                  --query Invalidation.Id \
+                  --output text
+              )
+              aws cloudfront wait invalidation-completed \
                 --distribution-id $id \
-                --paths "/*"
+                --id ${invalidation_id}
           done
 
     outputs:
