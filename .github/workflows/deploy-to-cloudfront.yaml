@@ -55,6 +55,12 @@ on:
         description: Name of S3 bucket for CloudFront. Defaults to cloudfront_name
         type: string
 
+      s3_delete_enabled:
+        required: false
+        description: Is delete enabled with new deploy to s3
+        type: boolean
+        default: true
+
       send_notification_to_slack:
         required: false
         type: boolean
@@ -143,10 +149,11 @@ jobs:
 
       - name: Upload files
         run: |
-          aws s3 sync \
-            --metadata-directive="REPLACE" \
-            --exclude ".*" \
-            --delete \
+          args=('--metadata-directive=REPLACE' '--exclude ".*"')
+          if [[ ${{inputs.s3_delete_enabled}} ]]; then
+            args+=('--delete')
+          fi
+          aws s3 sync ${args[@]} \
             ${{ inputs.path_to_static_files_to_upload }}/ s3://${{ inputs.s3_bucket_name }}
 
       - name: Invalidate cache
@@ -154,7 +161,7 @@ jobs:
           for id in $(
             aws cloudfront list-distributions \
                 --query 'DistributionList.Items[*].{id:Id,origin:Origins.Items[0].DomainName}[?starts_with(origin, `${{ inputs.s3_bucket_name }}`)].id' \
-                --output text); do 
+                --output text); do
               invalidation_id=$(
                 aws cloudfront create-invalidation \
                   --distribution-id $id \
