@@ -161,7 +161,8 @@ jobs:
           for id in $(
             aws cloudfront list-distributions \
                 --query 'DistributionList.Items[*].{id:Id,origin:Origins.Items[0].DomainName}[?starts_with(origin, `${{ inputs.s3_bucket_name }}`)].id' \
-                --output text); do
+                --output text
+          ); do 
               invalidation_id=$(
                 aws cloudfront create-invalidation \
                   --distribution-id $id \
