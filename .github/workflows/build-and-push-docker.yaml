@@ -58,15 +58,12 @@ jobs:
   build-docker-image-and-push-to-registers:
     name: Build docker image, push to both aws and dockerhub registers.
     runs-on: ${{ fromJSON(inputs.runs-on) }}
-    outputs:
-      version: ${{ steps.version.outputs.version }}
     steps:
       - uses: actions/checkout@v3
 
       - name: Process version
-        id: version
         run: |
-          echo "version=${{ inputs.environment }}-${{ github.run_attempt}}-$(git rev-parse --short HEAD)" >> ${env:GITHUB_OUTPUT}
+          echo "image_tag=${{ inputs.environment }}-${{ github.run_attempt}}-$(git rev-parse --short HEAD)" >> "$GITHUB_ENV"
 
       - name: Configure AWS credentials for push images
         uses: aws-actions/configure-aws-credentials@v1
@@ -103,8 +100,8 @@ jobs:
             NPM_TOKEN=${{ secrets.NPM_TOKEN }}
             ENV_FILE_NAME=${{ inputs.environment }}
           tags: |
-            ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ steps.version.outputs.version }}
-            ${{ inputs.org }}/${{ inputs.image }}:${{ steps.version.outputs.version }}
+            ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.image_tag }}
+            ${{ inputs.org }}/${{ inputs.image }}:${{ env.image_tag }}
             ${{ inputs.org }}/${{ inputs.image }}:${{ inputs.environment }}-latest
 
       - name: Build and push docker image (private repo)
@@ -122,4 +119,6 @@ jobs:
             NPM_TOKEN=${{ secrets.NPM_TOKEN }}
             ENV_FILE_NAME=${{ inputs.environment }}
           tags: |
-            ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ steps.version.outputs.version }}
+            ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.image_tag }}
+    outputs:
+      version: ${{ env.image_tag }}

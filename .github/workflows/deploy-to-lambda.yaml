@@ -83,15 +83,14 @@ jobs:
           ${{ inputs.install_dependencies_command }}
 
       - name: Get npm cache directory
-        id: npm-cache-dir
         working-directory: "${{ inputs.client_path }}"
-        run: echo "dir=$(npm config get cache)" >> ${env:GITHUB_OUTPUT}
+        run: echo "npm_cache_dir=$(npm config get cache)" >> "$GITHUB_ENV"
 
       - name: Restore cache
         uses: actions/cache@v3
         id: npm-cache
         with:
-          path: ${{ github.workspace }}/${{ inputs.client_path }}/${{ steps.npm-cache-dir.outputs.dir }}
+          path: ${{ github.workspace }}/${{ inputs.client_path }}/${{ env.npm_cache_dir }}
           key: ${{ runner.os }}-node-${{ hashFiles('${{ inputs.client_path }}//package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
