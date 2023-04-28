@@ -80,7 +80,7 @@ jobs:
       - name: Process version
         id: version
         run: |
-          echo "version=${{ inputs.environment }}-${{ github.run_attempt}}-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "version=${{ inputs.environment }}-${{ github.run_attempt}}-$(git rev-parse --short HEAD)" >> ${env:GITHUB_OUTPUT}
 
       - name: Build and push docker image to ECR
         uses: docker/build-push-action@v3
