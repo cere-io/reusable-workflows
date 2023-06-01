@@ -66,6 +66,11 @@ on:
         type: boolean
         default: false
 
+      disable_cache_restoring:
+        required: false
+        type: boolean
+        default: false
+
     secrets:
       NPM_TOKEN:
         required: false
@@ -87,6 +92,7 @@ jobs:
         run: ${{ inputs.install_dependencies_command }}
 
       - name: Restore cache
+        if: ${{ !inputs.disable_cache_restoring }}
         uses: actions/cache@v3
         with:
           path: '${{ inputs.client_path }}/node_modules'
