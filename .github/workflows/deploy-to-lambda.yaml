@@ -83,6 +83,7 @@ jobs:
           ${{ inputs.install_dependencies_command }}
 
       - name: Get npm cache directory
+        id: npm-cache-dir
         working-directory: "${{ inputs.client_path }}"
         run: echo "npm_cache_dir=$(npm config get cache)" >> "$GITHUB_ENV"
 
