@@ -147,8 +147,9 @@ jobs:
         uses: actions/checkout@v3
 
       - name: configure aws credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         with:
+          role-skip-session-tagging: true
           role-to-assume: arn:aws:iam::${{ inputs.aws_account_id }}:role/github
           role-session-name: ${{ github.event.repository.name }}
           aws-region: us-east-1
