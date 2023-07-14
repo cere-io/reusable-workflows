@@ -50,6 +50,18 @@ on:
         type: string
         default: ''
 
+      build_artifact:
+        required: false
+        description: "Additional Persistent artifact from another job."
+        type: string
+        default: ''
+
+      timeout:
+        required: false
+        description: "Timeout in minutes for the job execution. Defaults 15."
+        type: string
+        default: 15
+
     secrets:
       NPM_TOKEN:
         required: false
@@ -63,14 +75,23 @@ jobs:
   deploy-to-ecr:
     name: Build docker image, push to ECR.
     runs-on: ${{ fromJSON(inputs.runs-on) }}
-    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+
+    timeout-minutes: ${{ inputs.timeout }}
+
     steps:
       - uses: actions/checkout@v3
+
+      - uses: actions/download-artifact@v2
+        if: ${{ inputs.artifact != '' }}
+        with:
+          name: ${{ inputs.build_artifact }}
 
       - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-skip-session-tagging: true
           role-to-assume: arn:aws:iam::${{ inputs.aws_account_id }}:role/github
           role-session-name: ${{ github.event.repository.name }}
           aws-region: ${{ inputs.aws_region }}
