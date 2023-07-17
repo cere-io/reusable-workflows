@@ -79,7 +79,7 @@ jobs:
       contents: read
       id-token: write
 
-    timeout-minutes: ${{ inputs.timeout }}
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v3
