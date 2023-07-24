@@ -3,16 +3,21 @@ name: Build Docker image and push
 on:
   workflow_call:
     inputs:
+      aws_account_id:
+        required: true
+        description: Destination AWS Account
+        type: string
+
+      environment:
+        required: true
+        description: "Build environment, effects image tag prefix."
+        type: string
+
       runs-on:
         required: false
         description: 'Platform to execute on. Default ["self-hosted", "cere-io-large"]'
         type: string
         default: '["self-hosted", "cere-io-large"]'
-
-      aws_account_id:
-        required: true
-        description: Destination AWS Account
-        type: string
 
       aws_region:
         required: false
@@ -31,12 +36,6 @@ on:
         description: "Build's context. Defaults ./"
         type: string
         default: './'
-
-      environment:
-        required: true
-        description: "Build environment, effects image tag prefix. Default dev"
-        type: string
-        default: 'dev'
 
       repository:
         required: false
