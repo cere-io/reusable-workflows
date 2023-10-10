@@ -160,7 +160,7 @@ jobs:
       - name: Upload files
         run: |
           args=('--metadata-directive=REPLACE' '--exclude ".*"')
-          if [[ ${{inputs.s3_delete_enabled}} ]]; then
+          if ${{inputs.s3_delete_enabled}}; then
             args+=('--delete')
           fi
           aws s3 sync ${args[@]} \
