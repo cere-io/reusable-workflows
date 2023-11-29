@@ -84,7 +84,7 @@ jobs:
     runs-on: ${{ fromJSON(inputs.runs-on) }}
     container:
       image: ${{ inputs.build_container }}
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v3
 
