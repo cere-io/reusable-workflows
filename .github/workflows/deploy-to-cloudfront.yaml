@@ -136,7 +136,7 @@ jobs:
         if: ${{ inputs.build_static_files }}
         uses: actions/download-artifact@v3
         with:
-          name: ${{ inputs.path_to_static_files_to_upload }}
+          name: build
           path: artifacts
 
       - name: Unzip artifacts
