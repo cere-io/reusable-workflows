@@ -67,9 +67,16 @@ on:
         type: number
         default: 15
 
+      tmate_on:
+        required: false
+        description: ''
+        type: boolean
+        default: false
+
     secrets:
       NPM_TOKEN:
         required: false
+      
 
     outputs:
       version:
@@ -97,6 +104,10 @@ jobs:
       - name: Configure host
         if: ${{ inputs.configure_host_command != '' }}
         run: ${{ inputs.configure_host_command }}
+
+      - name: Setup tmate session
+        if: ${{ inputs.tmate_on }}
+        uses: mxschmitt/action-tmate@v3
 
       - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v2
