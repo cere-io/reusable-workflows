@@ -84,6 +84,9 @@ jobs:
     runs-on: ${{ fromJSON(inputs.runs-on) }}
     container:
       image: ${{ inputs.build_container }}
+      credentials:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v3
