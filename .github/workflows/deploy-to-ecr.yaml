@@ -100,17 +100,6 @@ jobs:
         if: ${{ inputs.artifact != '' }}
         with:
           name: ${{ inputs.build_artifact }}
-      
-      - name: Configure host
-        if: ${{ inputs.configure_host_command != '' }}
-        run: ${{ inputs.configure_host_command }}
-
-      - name: Setup tmate session
-        if: ${{ inputs.tmate_on }}
-        uses: mxschmitt/action-tmate@v3
-        with:
-          detached: true
-          limit-access-to-actor: false
 
       - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -122,6 +111,17 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Configure host
+        if: ${{ inputs.configure_host_command != '' }}
+        run: ${{ inputs.configure_host_command }}
+
+      - name: Setup tmate session
+        if: ${{ inputs.tmate_on }}
+        uses: mxschmitt/action-tmate@v3
+        with:
+          detached: true
+          limit-access-to-actor: false
 
       - name: Login to Docker Hub
         uses: docker/login-action@v2
