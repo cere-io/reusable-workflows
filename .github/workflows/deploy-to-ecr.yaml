@@ -54,7 +54,7 @@ on:
         description: "Additional Persistent artifact from another job."
         type: string
         default: ''
-      
+
       configure_host_command:
         required: false
         description: "Additional command to configure host"
@@ -76,7 +76,15 @@ on:
     secrets:
       NPM_TOKEN:
         required: false
-      
+      DB_PASSWORD:
+        required: false
+      DB_USER:
+        required: false
+      DOCKERHUB_USERNAME:
+        required: false
+      DOCKERHUB_TOKEN:
+        required: false
+
 
     outputs:
       version:
@@ -154,6 +162,8 @@ jobs:
           build-args: |
             NPM_TOKEN=${{ secrets.NPM_TOKEN_READ }}
             ENV_FILE_NAME=${{ inputs.environment }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            DB_USER=${{ secrets.DB_USER }}
           tags: |
             ${{ steps.login-ecr.outputs.registry }}/${{ inputs.repository }}:${{ env.image_tag }}
             ${{ env.custom_image_full_tag }}
