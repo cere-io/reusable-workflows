@@ -115,7 +115,7 @@ jobs:
           zip -qq -r "${{ inputs.lambda_function_name }}.zip" ./
 
       - name: Prepare artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.lambda_function_name }}
           path: "${{ github.workspace }}/${{ inputs.client_path }}/${{ inputs.path_to_application_files_to_upload }}/${{ inputs.lambda_function_name }}.zip"
@@ -134,7 +134,7 @@ jobs:
           zip -qq -r "${{ inputs.lambda_function_name }}.zip" ./
 
       - name: Prepare artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.lambda_function_name }}
           path: "${{ github.workspace }}/${{ inputs.client_path }}/${{ inputs.path_to_application_files_to_upload }}/${{ inputs.lambda_function_name }}.zip"
@@ -152,7 +152,7 @@ jobs:
       id-token: write
     steps:
       - name: Restore artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ inputs.lambda_function_name }}
           path: lambda

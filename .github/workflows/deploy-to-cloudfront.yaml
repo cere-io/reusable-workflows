@@ -117,7 +117,7 @@ jobs:
           args: zip -qq -r artifacts.zip ${{ inputs.path_to_static_files_to_upload }}
 
       - name: Prepare artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build
           path: ${{ github.workspace }}/artifacts.zip
@@ -134,7 +134,7 @@ jobs:
     steps:
       - name: Restore build
         if: ${{ inputs.build_static_files }}
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build
           path: artifacts
