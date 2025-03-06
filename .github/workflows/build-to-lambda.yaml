@@ -139,41 +139,41 @@ jobs:
           name: ${{ inputs.lambda_function_name }}
           path: "${{ github.workspace }}/${{ inputs.client_path }}/${{ inputs.path_to_application_files_to_upload }}/${{ inputs.lambda_function_name }}.zip"
 
-  deploy:
-    name: Deploy Lambda Function
-    needs:
-      - build
-      - archive
-    if: always() && (needs.build.result == 'success' || needs.archive.result == 'success')
-    runs-on: "${{ fromJSON(inputs.runs-on) }}"
-    timeout-minutes: 10
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - name: Restore artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ inputs.lambda_function_name }}
-          path: lambda
+  # deploy:
+  #   name: Deploy Lambda Function
+  #   needs:
+  #     - build
+  #     - archive
+  #   if: always() && (needs.build.result == 'success' || needs.archive.result == 'success')
+  #   runs-on: "${{ fromJSON(inputs.runs-on) }}"
+  #   timeout-minutes: 10
+  #   permissions:
+  #     contents: read
+  #     id-token: write
+  #   steps:
+  #     - name: Restore artifact
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: ${{ inputs.lambda_function_name }}
+  #         path: lambda
 
-      - name: Configure aws credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          role-skip-session-tagging: true
-          role-to-assume: "arn:aws:iam::${{ inputs.aws_account_id }}:role/github"
-          role-session-name: "${{ github.event.repository.name }}"
-          aws-region: "${{ inputs.aws_region }}"
+  #     - name: Configure aws credentials
+  #       uses: aws-actions/configure-aws-credentials@v2
+  #       with:
+  #         role-skip-session-tagging: true
+  #         role-to-assume: "arn:aws:iam::${{ inputs.aws_account_id }}:role/github"
+  #         role-session-name: "${{ github.event.repository.name }}"
+  #         aws-region: "${{ inputs.aws_region }}"
 
-      - name: Upload files
-        run: |
-          aws s3 mv \
-            lambda/${{ inputs.lambda_function_name }}.zip \
-            "s3://cere-deployments-${{ inputs.aws_account_id }}/lambda/${{ inputs.lambda_function_name }}.zip"
+      # - name: Upload files
+      #   run: |
+      #     aws s3 mv \
+      #       lambda/${{ inputs.lambda_function_name }}.zip \
+      #       "s3://cere-deployments-${{ inputs.aws_account_id }}/lambda/${{ inputs.lambda_function_name }}.zip"
 
-      - name: Deploy Function
-        run: |
-          aws lambda update-function-code \
-            --function-name "${{ inputs.lambda_function_name }}" \
-            --s3-bucket "cere-deployments-${{ inputs.aws_account_id }}" \
-            --s3-key "lambda/${{ inputs.lambda_function_name }}.zip"
+      # - name: Deploy Function
+      #   run: |
+      #     aws lambda update-function-code \
+      #       --function-name "${{ inputs.lambda_function_name }}" \
+      #       --s3-bucket "cere-deployments-${{ inputs.aws_account_id }}" \
+      #       --s3-key "lambda/${{ inputs.lambda_function_name }}.zip"
