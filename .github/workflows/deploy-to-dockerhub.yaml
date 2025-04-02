@@ -31,6 +31,12 @@ on:
         description: "Image repository. Defaults to github repository name."
         type: string
         default: ${{ github.event.repository.name }}
+
+      configure_host_command:
+        required: false
+        description: "Additional command to configure host"
+        type: string
+        default: ''
     secrets:
       NPM_TOKEN:
         required: false
@@ -55,6 +61,12 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Configure host
+        if: ${{ inputs.configure_host_command != '' }}
+        run: ${{ inputs.configure_host_command }}
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN_READ }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
