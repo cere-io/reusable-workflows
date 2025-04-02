@@ -83,6 +83,9 @@ jobs:
           file: ${{ inputs.file }}
           push: true
           no-cache: true
+          platforms	: |
+            linux/amd64
+            linux/arm64
           build-args: |
             NPM_TOKEN=${{ secrets.NPM_TOKEN_READ }}
             ENV_FILE_NAME=${{ inputs.environment }}
