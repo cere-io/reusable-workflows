@@ -97,12 +97,13 @@ jobs:
           push: true
           no-cache: true
           build-args: |
-            NPM_TOKEN=${{ secrets.NPM_TOKEN }}
             ENV_FILE_NAME=${{ inputs.environment }}
           tags: |
             ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.image_tag }}
             ${{ inputs.org }}/${{ inputs.image }}:${{ env.image_tag }}
             ${{ inputs.org }}/${{ inputs.image }}:${{ inputs.environment }}-latest
+          secrets:
+            NPM_TOKEN=${{ secrets.NPM_TOKEN_READ }}
 
       - name: Build and push docker image (private repo)
         if: ${{ !inputs.push-to-public-dockerhub }}
@@ -116,9 +117,11 @@ jobs:
           push: true
           no-cache: true
           build-args: |
-            NPM_TOKEN=${{ secrets.NPM_TOKEN }}
             ENV_FILE_NAME=${{ inputs.environment }}
           tags: |
             ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.image_tag }}
+          secrets:
+            NPM_TOKEN=${{ secrets.NPM_TOKEN_READ }}
+
     outputs:
       version: ${{ env.image_tag }}
