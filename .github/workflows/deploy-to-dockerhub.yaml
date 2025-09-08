@@ -87,10 +87,11 @@ jobs:
             linux/amd64
             linux/arm64
           build-args: |
-            NPM_TOKEN=${{ secrets.NPM_TOKEN_READ }}
             ENV_FILE_NAME=${{ inputs.environment }}
           tags: |
             cerebellumnetwork/${{ inputs.repository }}:${{ env.image_tag }}
+          secrets:
+            NPM_TOKEN=${{ secrets.NPM_TOKEN_READ }}
 
     outputs:
       version: ${{ env.image_tag }}

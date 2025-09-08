@@ -166,14 +166,15 @@ jobs:
           push: true
           no-cache: true
           build-args: |
-            NPM_TOKEN=${{ secrets.NPM_TOKEN_READ }}
             ENV_FILE_NAME=${{ inputs.environment }}
-            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-            DB_USER=${{ secrets.DB_USER }}
             NODE_URL=${{ inputs.node_url }}
           tags: |
             ${{ steps.login-ecr.outputs.registry }}/${{ inputs.repository }}:${{ env.image_tag }}
             ${{ env.custom_image_full_tag }}
+          secrets:
+            NPM_TOKEN=${{ secrets.NPM_TOKEN_READ }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            DB_USER=${{ secrets.DB_USER }}
 
     outputs:
       version: ${{ env.image_tag }}
