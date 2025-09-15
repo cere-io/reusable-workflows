@@ -130,7 +130,7 @@ jobs:
         if: ${{ inputs.configure_host_command != '' }}
         run: ${{ inputs.configure_host_command }}
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN_READ }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Setup tmate session
         if: ${{ inputs.tmate_on }}
@@ -172,7 +172,7 @@ jobs:
             ${{ steps.login-ecr.outputs.registry }}/${{ inputs.repository }}:${{ env.image_tag }}
             ${{ env.custom_image_full_tag }}
           secrets:
-            NPM_TOKEN=${{ secrets.NPM_TOKEN_READ }}
+            NPM_TOKEN=${{ secrets.NPM_TOKEN }}
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
             DB_USER=${{ secrets.DB_USER }}
 
