@@ -80,7 +80,7 @@ on:
         default: ''
 
     secrets:
-      NPM_TOKEN:
+      NPM_TOKEN_READ:
         required: false
       DB_PASSWORD:
         required: false
