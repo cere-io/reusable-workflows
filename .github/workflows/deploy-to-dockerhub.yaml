@@ -62,6 +62,16 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Read .nvmrc
+        id: nvmrc
+        working-directory: ./backend
+        run: echo "NODE_VERSION=$(cat .nvmrc)" >> $GITHUB_OUTPUT
+
+      - name: 'Set up Node.js'
+        uses: 'actions/setup-node@v3'
+        with:
+          node-version: '${{ steps.nvmrc.outputs.NODE_VERSION }}'
+
       - name: Configure host
         if: ${{ inputs.configure_host_command != '' }}
         run: ${{ inputs.configure_host_command }}
